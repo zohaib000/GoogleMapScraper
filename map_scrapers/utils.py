@@ -11,11 +11,14 @@ from .tasks import create_item_task
 
 def get_social_percent(user, social):
     social_count = History.objects.filter(user=user,
-                                          social_media_links__icontains=social).count()
+    social_media_links__icontains=social).count()
     total_count = History.objects.all().count()
     if social_count == 0:
         social_count = 1
-    progress = (social_count / total_count) * 100
+    try:    
+        progress = (social_count / total_count) * 100
+    except ZeroDivisionError as e:  
+        progress = 0 
     return round(progress, 1)
 
 

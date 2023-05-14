@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.uic import loadUi
 import sys
 from threading import Thread
-import qdarktheme
 from selenium.webdriver.common.by import By
 import os
 import time
