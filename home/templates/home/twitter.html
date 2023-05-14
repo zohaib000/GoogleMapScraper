@@ -1,0 +1,166 @@
+{% extends 'home/base.html' %} {% load static %} {% block title %}<title>
+  Tweet Generator</title
+>{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/twitter.css' %}" />
+<style>
+  pre {
+    font-size: 24px;
+    letter-spacing: 0.8px;
+    white-space: pre-wrap;
+  }
+
+  #process {
+    display: none;
+  }
+  .card {
+    width: 94.7%;
+    margin: 10px;
+  }
+
+  /* #query {
+    width: 94.7%;
+    height: 100%;
+    background-color: #fff;
+    border: none;
+    outline: none;
+    padding: 10px;
+    color: brown;
+    cursor: text;
+  } */
+
+  input {
+    width: 100% !important;
+  }
+</style>
+<body>
+  <div class="container mt-2 outputSection">
+    <div>
+      <textarea
+        name=""
+        id="output"
+        cols="30"
+        rows="10"
+        class="form-control form-control-lg"
+        placeholder="Scraped Emails be shown here....."
+      >
+      </textarea>
+    </div>
+
+    <div class="progress mt-2">
+      <div
+        class="progress-bar"
+        role="progressbar"
+        style="width: 0%"
+        aria-valuenow="0"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
+    <p id="percent" class="text-light font-weight-bold">0 %</p>
+
+    <form class="form-inline mx-2 row no-gutters mt-4" id="form">
+      <div class="form-group mb-2 col-md-5">
+        <input
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="Enter your  keyword"
+          required
+          id="query"
+        />
+      </div>
+
+      <div class="form-group mx-sm-1 mb-2 col-md-5">
+        <input
+          type="number"
+          class="form-control form-control-lg"
+          placeholder="Number of Emails you need"
+          required
+          id="emails"
+        />
+      </div>
+      <div class="form-group mx-sm-1 mb-2 col-md-5">
+        <select name="method" id="method" class="form-control form-control-lg">
+          <option value="b2c">B2C</option>
+          <option value="b2b">B2B</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-warning btn-lg mb-2">Send</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="process" class="container">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <lottie-player
+      src="https://assets10.lottiefiles.com/packages/lf20_jxdtgpuk.json"
+      background="transparent"
+      speed="1"
+      style="width: 100px; height: 100px"
+      loop
+      autoplay
+    ></lottie-player>
+  </div>
+</body>
+<script>
+  var click = 0;
+  $("#form").submit(function () {
+    event.preventDefault();
+    $("#process").css("display", "block");
+    query = $("#query").val();
+    emails = $("#emails").val();
+    method = $("#method").val();
+    $("input[type=text]").val("").attr("disabled", true);
+    $("button[type=submit]").attr("disabled", true);
+    data = { query: query, emails: emails, method: method };
+    //  get current job details live
+
+    setInterval(() => {
+      $.ajax({
+        method: "GET",
+        data: data,
+        url: '{% url "currentJob" %}',
+        success: function (res) {
+          var data = res.job;
+          console.log(data);
+          $("#output").val(data.emails);
+          const p = parseInt(data.progress);
+          console.log(p);
+          $(".progress-bar").css({
+            width: `${p}%`,
+          });
+          $(".progress-bar").attr("aria-valuenow", p);
+          $("#percent").text(`${p} %`);
+        },
+        error: function (error) {
+          console.log(erorr);
+        },
+      });
+    }, 100);
+
+    $.ajax({
+      method: "GET",
+      data: data,
+      url: '{% url "twitter" %}',
+
+      success: function (r) {
+        result = r.output;
+        console.log(result);
+        $("input[type=text]").attr("disabled", false);
+        $("button[type=submit]").attr("disabled", false);
+        $(".anim").remove();
+        $("#process").css("display", "none");
+      },
+      error: function (error) {
+        console.log(error);
+      },
+    });
+  });
+
+  $(document).ready(function () {
+    $("footer").hide();
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+March 29, 2023 - 12:35:36
+Django version 4.1.7, using settings 'GoogleMapScraper.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+April 02, 2023 - 22:02:38
+Django version 4.1.7, using settings 'GoogleMapScraper.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+Error: That port is already in use.
