@@ -3,44 +3,20 @@
 >{% endblock %} {% block content %}
 <link rel="stylesheet" href="{% static 'css/twitter.css' %}" />
 <style>
-  pre {
-    font-size: 24px;
-    letter-spacing: 0.8px;
-    white-space: pre-wrap;
-  }
-
-  #process {
-    display: none;
-  }
-  .card {
-    width: 94.7%;
-    margin: 10px;
-  }
-
-  /* #query {
-    width: 94.7%;
-    height: 100%;
-    background-color: #fff;
-    border: none;
-    outline: none;
-    padding: 10px;
-    color: brown;
-    cursor: text;
-  } */
-
   input {
     width: 100% !important;
   }
 </style>
 <body>
-  <div class="container mt-2 outputSection">
+  <div class="container mt-5 align-self-center">
+    <div class="container" >
     <div>
       <textarea
         name=""
         id="output"
         cols="30"
         rows="10"
-        class="form-control form-control-lg"
+        class="form-control pt-5 mt-4"
         placeholder="Scraped Emails be shown here....."
       >
       </textarea>
@@ -66,6 +42,7 @@
           placeholder="Enter your  keyword"
           required
           id="query"
+          name="query"
         />
       </div>
 
@@ -76,6 +53,7 @@
           placeholder="Number of Emails you need"
           required
           id="emails"
+          name="emails"
         />
       </div>
       <div class="form-group mx-sm-1 mb-2 col-md-5">
@@ -90,6 +68,7 @@
       </div>
     </form>
   </div>
+</div>
 
   <div id="process" class="container">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
@@ -103,7 +82,13 @@
     ></lottie-player>
   </div>
 </body>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+  
+  
+
   var click = 0;
   $("#form").submit(function () {
     event.preventDefault();

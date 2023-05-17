@@ -5,6 +5,7 @@ from PyQt5.uic import loadUi
 import sys
 from threading import Thread
 from selenium.webdriver.common.by import By
+import csv
 import os
 import time
 import concurrent.futures
@@ -40,7 +41,6 @@ def find(query, emails, method, jobs, user):
     ua = UserAgent()
     user_agent = ua.random
     print(user_agent)
-
     p = 0
     emailsToScrape = int(emails)
     emailScraped = 0
@@ -128,17 +128,25 @@ def find(query, emails, method, jobs, user):
         print(f'{int(p)} % ')     # showing percentage
         job_id = job.id
         ujob = jobs.objects.get(id=job.id)
-        ujob.progress = str(p)          # saving progress in backend
+        ujob.progress = int(p)          # saving progress in backend
         ujob.emails = str(scrapedEmails)  # saving emails in backend
         ujob.save()
 
         time.sleep(3)
         current = current+1
 
+    filename = f"{query}_{method}_{emails}.csv"
+    filepath = os.path.join(os.getcwd(), filename)
+    with open(filepath, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Email Address'])
+        for email in emails:
+            writer.writerow([email])
+
     ujob = jobs.objects.get(id=job.id)
-    ujob.progress = str(100)
+    ujob.progress = int(100)
+    ujob.csv = str(filepath)
     ujob.status = "completed"
     ujob.save()
-
     print('Scraping Done 100%')
     return scrapedEmails

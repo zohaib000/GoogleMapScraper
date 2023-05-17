@@ -30,20 +30,27 @@ class currentJob(View):
         job = JOBS.objects.filter(user=str(request.user), name=query).values().last()
         return JsonResponse({'job': job})
 
-class twitter(View):
+class facebook(View):
     def get(self, request):
         if request.user.is_authenticated:
             if check_ajax(request):
                 query = request.GET.get('query')
                 emails = request.GET.get('emails')
+                print(emails)
                 method = request.GET.get('method')
                 print(query, emails, method)
-                response = find(query, emails, method, JOBS, request.user)
+                response = find(query, emails, method, JOBS, request.user.email)
                 print(response)
                 return JsonResponse({'input': query, 'output': response})
-            return render(request, 'home/twitter.html')
+            return render(request, 'home/facebook.html')
         else:
             return HttpResponseRedirect("/user_login")
 
-
+def my_jobs(request):
+    jobs = JOBS.objects.filter(user=request.user.email)
+    print(request.user.email)
+    status = request.GET.get('s')
+    if status != None:
+        jobs = jobs.filter(status=status)
+    return render(request, "home/my_jobs.html", {"jobs":jobs})
 
