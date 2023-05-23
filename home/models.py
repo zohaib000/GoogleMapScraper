@@ -12,5 +12,11 @@ class JOBS(models.Model):
     status = models.CharField(max_length=200)
     csv = models.FileField(upload_to="download", blank=True, null=True)
     user = models.CharField(max_length=300)
-    progress = models.SmallIntegerField(max_length=110)
+    progress = models.CharField(max_length=110)
     emails = models.TextField()
+
+
+class credits(models.Model):
+    user = models.CharField(max_length=200)
+    available = models.IntegerField()
+    date = models.DateField(auto_now_add=True, null=True)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from .models import *
 
-MODELS = [JOBS]
+MODELS = [JOBS, credits]
 
 for MODEL in MODELS:
     @admin.register(MODEL)

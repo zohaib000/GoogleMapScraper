@@ -6,7 +6,7 @@ from django.urls import path, include, re_path
 
 admin_url = config('ADMIN_URL', default='map_scrape_admin_dont_url')
 urlpatterns = [
-    path(f'{admin_url}/', admin.site.urls, name='admin'),
+    path(f'admin', admin.site.urls, name='admin'),
     path('', include('map_scrapers.urls')),
     path('home/', include('home.urls')),
     path('accounts/', include('allauth.urls')),

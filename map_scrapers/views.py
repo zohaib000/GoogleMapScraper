@@ -17,6 +17,8 @@ from map_scrapers.models import History, SearchInfo
 from map_scrapers.tasks import get_all_place, proxies, api_key
 from map_scrapers.utils import export_user_csv, query_items, export_all_csv, export_search_info_user_csv, \
     get_social_percent
+from home.models import *
+from datetime import datetime
 
 
 class SearchDashboardView(LoginRequiredMixin, View):
@@ -25,6 +27,17 @@ class SearchDashboardView(LoginRequiredMixin, View):
     """
 
     def get(self, request):
+        # try:
+        creds = credits.objects.get(user=request.user.email)
+        today = datetime.now().date()
+        past = creds.date
+        days = (today-past).days
+        print(days)
+        if (days > 30):  # ? will assign new credits after 1 month
+            creds.available = 15000
+            creds.save()
+        # except:
+        #     credits(user=request.user.email, available=15000).save()
         context = {
             "total_searches": SearchInfo.objects.filter(user=self.request.user).count(),
             "search_infos": SearchInfo.objects.filter(user=self.request.user)[:5],
@@ -244,7 +257,8 @@ class HistoryDeleteView(LoginRequiredMixin, View):
     def post(self, request):
         item_id = request.POST.get("history_id")
         if item_id:
-            history = History.objects.filter(user=self.request.user, id=item_id).first()
+            history = History.objects.filter(
+                user=self.request.user, id=item_id).first()
             if history:
                 history.delete()
         return redirect("history_list")

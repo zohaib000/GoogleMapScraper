@@ -1,11 +1,13 @@
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.uic import loadUi
 import sys
 from threading import Thread
+import qdarktheme
 from selenium.webdriver.common.by import By
-import csv
+import openpyxl
 import os
 import time
 import concurrent.futures
@@ -29,10 +31,19 @@ from openpyxl import Workbook
 from selenium.webdriver.common.action_chains import ActionChains
 from termcolor import colored
 from fake_useragent import UserAgent
+import csv
 job_id = 0
 
 
-def find(query, emails, method, jobs, user):
+def find(query, emails, method, jobs, user, credits):
+
+    # output file written to folder
+    filename = f"csv/{query}.xlsx"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(['Email Address'])
+
+    creds = credits.objects.get(user=user)
     job = jobs(name=query, status="pending", user=user,
                emails="Extracting Emails....please wait!", progress="0")
     job.save()
@@ -41,6 +52,7 @@ def find(query, emails, method, jobs, user):
     ua = UserAgent()
     user_agent = ua.random
     print(user_agent)
+
     p = 0
     emailsToScrape = int(emails)
     emailScraped = 0
@@ -62,25 +74,25 @@ def find(query, emails, method, jobs, user):
     # options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     # options.add_argument(f'user-agent={user_agent}')
-    options.add_experimental_option('debuggerAddress', '127.0.0.1:9222')
+    # options.add_experimental_option('debuggerAddress', '127.0.0.1:9222')
     driver = webdriver.Chrome(service=Service(
         ChromeDriverManager().install()), options=options)
 
     # ? setting to show 100 results per page
-    # driver.get('https://www.google.com/preferences?hl=en&prev=https://www.google.com/search?q%3Dheadless%2Band%2Bno%2Bsandbox%2Bin%2Bpython%2Bselenium%26rlz%3D1C1CHBD_enPK1046PK1046%26oq%3Dheadless%2Band%2Bno%2Bsandbox%2Bin%2Bpython%2Bselenim%26aqs%3Dchrome.1.69i57j33i10i160l3.19759j0j7%26sourceid%3Dchrome%26ie%3DUTF-8%26start%3D0%26num%3D50')
-    # script = """
-    #     arguments[0].setAttribute('style',"left:342px;")
-    #     arguments[1].setAttribute('aria-value-now',"100")
-    #     arguments[2].setAttribute('value',"100")
-    #     """
-    # time.sleep(3)
-    # driver.execute_script(script, driver.find_element(
-    #     by=By.CLASS_NAME, value="goog-slider-thumb"), driver.find_element(
-    #     by=By.CLASS_NAME, value="goog-slider"), driver.find_element(
-    #     by=By.NAME, value="num"))
-    # time.sleep(2)
-    # driver.find_element(by=By.CLASS_NAME, value="jfk-button-action").click()
-    # time.sleep(3)
+    driver.get('https://www.google.com/preferences?hl=en&prev=https://www.google.com/search?q%3Dheadless%2Band%2Bno%2Bsandbox%2Bin%2Bpython%2Bselenium%26rlz%3D1C1CHBD_enPK1046PK1046%26oq%3Dheadless%2Band%2Bno%2Bsandbox%2Bin%2Bpython%2Bselenim%26aqs%3Dchrome.1.69i57j33i10i160l3.19759j0j7%26sourceid%3Dchrome%26ie%3DUTF-8%26start%3D0%26num%3D50')
+    script = """
+        arguments[0].setAttribute('style',"left:342px;")
+        arguments[1].setAttribute('aria-value-now',"100")
+        arguments[2].setAttribute('value',"100")
+        """
+    time.sleep(3)
+    driver.execute_script(script, driver.find_element(
+        by=By.CLASS_NAME, value="goog-slider-thumb"), driver.find_element(
+        by=By.CLASS_NAME, value="goog-slider"), driver.find_element(
+        by=By.NAME, value="num"))
+    time.sleep(2)
+    driver.find_element(by=By.CLASS_NAME, value="jfk-button-action").click()
+    time.sleep(2)
 
     # ? start scraping
     driver.get('https://www.google.com')
@@ -91,13 +103,15 @@ def find(query, emails, method, jobs, user):
     input.send_keys(Keys.ENTER)
     urls = []
 
+    time.sleep(3)
+
     current = 1
     total = len(driver.find_elements(by=By.CLASS_NAME, value="fl"))+1
+    print(str(total)+"elements found for this")
     while (True):
         # ? finding resulting Links
         print('Extracting the page...')
         url = driver.current_url
-        print(url)
         p = (current/total)*100
         print(f'Scraping {url}')
         text = """"""
@@ -112,10 +126,16 @@ def find(query, emails, method, jobs, user):
             set([email for email in emails if (not (str(email)[0].isdigit()))]))
 
         # ? printing emails
-        for email in enumerate(emails):
-            print(email[1])
-            scrapedEmails = scrapedEmails+f"{email[1]} \n"
+        # Write the data rows
+        for email in emails:
+            print(email)
+            scrapedEmails = scrapedEmails+f"{email} \n"
+            ws.append([email])
 
+        # Save the workbook
+        wb.save(f'media/{filename}')
+        creds.available = creds.available-len(emails)
+        creds.save()
         emailScraped = emailScraped+len(emails)
         # check if required emails are met
         if (emailsToScrape <= emailScraped):
@@ -128,25 +148,18 @@ def find(query, emails, method, jobs, user):
         print(f'{int(p)} % ')     # showing percentage
         job_id = job.id
         ujob = jobs.objects.get(id=job.id)
-        ujob.progress = int(p)          # saving progress in backend
+        ujob.progress = str(p)          # saving progress in backend
         ujob.emails = str(scrapedEmails)  # saving emails in backend
         ujob.save()
 
-        time.sleep(3)
+        time.sleep(2)
         current = current+1
 
-    filename = f"{query}_{method}_{emails}.csv"
-    filepath = os.path.join(os.getcwd(), filename)
-    with open(filepath, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Email Address'])
-        for email in emails:
-            writer.writerow([email])
-
     ujob = jobs.objects.get(id=job.id)
-    ujob.progress = int(100)
-    ujob.csv = str(filepath)
+    ujob.progress = str(100)
+    ujob.csv = str(filename)
     ujob.status = "completed"
     ujob.save()
+
     print('Scraping Done 100%')
     return scrapedEmails
